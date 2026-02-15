@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-hello-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello-aws
+  template:
+    metadata:
+      labels:
+        app: hello-aws
+    spec:
+      containers:
+      - name: web
+        image: nginxdemos/hello:latest
+        ports:
+        - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-service
+  annotations:
+    # This annotation tells AWS to create an internet-facing NLB
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+spec:
+  type: LoadBalancer
+  selector:
+    app: hello-aws
+  ports:
+    - port: 80
+      targetPort: 80
