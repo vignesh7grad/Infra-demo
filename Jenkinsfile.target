@@ -1,0 +1,44 @@
+// Jenkinsfile.target
+pipeline {
+    agent any
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
+        WORKING_DIR = 'Dev'
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                // Create the symlink to fix the case-sensitivity issue from earlier
+                sh 'ln -s Projects projects || true'
+            }
+        }
+        stage('Terraform Plan') {
+            steps {
+                dir("${env.WORKING_DIR}") {
+                    script {
+                        // Logic to handle the 'project' parameter from DSL
+                        def targetArg = params.project ? "-target=${params.project}" : ""
+                        sh "terraform init"
+                        sh "terraform plan ${targetArg} -out=tfplan"
+                    }
+                }
+                stash name: 'workspace', includes: '**/*'
+            }
+        }
+        stage('Approval') {
+            steps {
+                input message: "Deploying target: ${params.project ?: 'Everything'}. Proceed?"
+            }
+        }
+        stage('Terraform Apply') {
+            steps {
+                unstash 'workspace'
+                dir("${env.WORKING_DIR}") {
+                    // Target is already encoded in the tfplan file
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+    }
+}
