@@ -1,5 +1,5 @@
 module "demo-ecs" {
-    source  = "../projects/ecs"
+    source  = "../Projects/ecs"
 
   env           = "dev"
 

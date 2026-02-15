@@ -1,5 +1,5 @@
 module "demo-eks" {
-    source  = "../projects/eks"
+    source  = "../Projects/eks"
 
   env           = "dev"
 

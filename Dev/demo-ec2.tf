@@ -1,5 +1,5 @@
 module "demo-ec2" {
-    source  = "../projects/ec2"
+    source  = "../Projects/ec2"
 
   name = "demo-instance-dev"
 
